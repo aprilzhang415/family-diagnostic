@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国家庭海外发展诊断问卷 v3.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --purple-dark: #5b21b6;
+    --purple-mid: #a78bfa;
+    --bg: #0f0a1e;
+    --card: #1a1030;
+    --card2: #231842;
+    --text: #e2d9f3;
+    --muted: #9d8ec4;
+    --border: #3d2d6b;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+  /* ===== HEADER ===== */
+  .hero {
+    background: linear-gradient(135deg, #1e0a3c 0%, #3b0764 50%, #1e0a3c 100%);
+    padding: 48px 24px 36px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 300px;
+    background: radial-gradient(ellipse, rgba(124,58,237,.35) 0%, transparent 70%);
+  }
+  .hero h1 { font-size: 1.8rem; font-weight: 700; color: #fff; margin-bottom: 6px; position: relative; }
+  .hero h2 { font-size: .95rem; color: var(--purple-mid); font-weight: 400; margin-bottom: 16px; position: relative; }
+  .hero .badge { display: inline-block; background: rgba(124,58,237,.3); border: 1px solid var(--purple); color: var(--purple-mid); padding: 4px 14px; border-radius: 20px; font-size: .8rem; position: relative; }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar-wrap { background: var(--card); padding: 12px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .progress-bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-mid)); border-radius: 3px; transition: width .4s; }
+  .progress-label { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+
+  /* ===== PAGES ===== */
+  .page { display: none; max-width: 780px; margin: 0 auto; padding: 24px 16px; }
+  .page.active { display: block; }
+
+  /* ===== SECTION ===== */
+  .section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-title .icon { font-size: 1.3rem; }
+  .section-subtitle { font-size: .85rem; color: var(--muted); margin-top: 3px; font-weight: 400; }
+
+  /* ===== CARD ===== */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .card-header { font-size: .9rem; font-weight: 600; color: var(--purple-mid); margin-bottom: 14px; }
+
+  /* ===== FORM FIELDS ===== */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .field-row.single { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: .82rem; color: var(--muted); }
+  .field input, .field select, .field textarea {
+    background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 9px 12px; font-size: .88rem; outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--purple); }
+  .field select option { background: #1a1030; }
+
+  /* ===== RADIO INLINE ===== */
+  .radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: .85rem; color: var(--text); }
+  .radio-group input[type=radio], .radio-group input[type=checkbox] { accent-color: var(--purple); cursor: pointer; }
+
+  /* ===== LIKERT TABLE ===== */
+  .likert-table { width: 100%; border-collapse: collapse; }
+  .likert-table th { font-size: .78rem; color: var(--muted); text-align: center; padding: 6px 4px; font-weight: 500; }
+  .likert-table th.q-col { text-align: left; width: 55%; }
+  .likert-table td { padding: 10px 4px; vertical-align: top; border-bottom: 1px solid rgba(61,45,107,.5); }
+  .likert-table td.q-col { font-size: .84rem; line-height: 1.5; }
+  .likert-table td.q-col .en { font-size: .75rem; color: var(--muted); margin-top: 2px; display: block; }
+  .likert-table td.r-col { text-align: center; }
+  .likert-table input[type=radio] { accent-color: var(--purple); width: 16px; height: 16px; cursor: pointer; }
+  .likert-table tr:last-child td { border-bottom: none; }
+  .likert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .likert-header .ageband { background: rgba(124,58,237,.25); border: 1px solid var(--purple); color: var(--purple-mid); font-size: .78rem; padding: 2px 10px; border-radius: 12px; }
+
+  /* ===== SCALE LEGEND ===== */
+  .scale-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .scale-legend span { font-size: .75rem; color: var(--muted); }
+  .scale-legend .dot { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--purple-light); border: 2px solid var(--purple); text-align: center; line-height: 16px; font-size: .7rem; color: var(--purple-dark); font-weight: 700; margin-right: 3px; }
+
+  /* ===== TABS (age group) ===== */
+  .age-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .age-tab { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: .82rem; cursor: pointer; transition: all .2s; }
+  .age-tab.active { background: var(--purple); border-color: var(--purple); color: #fff; font-weight: 600; }
+
+  /* ===== CHILD TABS ===== */
+  .child-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .child-tab-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: .82rem; cursor: pointer; transition: all .2s; }
+  .child-tab-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; font-weight: 600; }
+  .add-child-btn { padding: 6px 14px; border-radius: 20px; border: 1px dashed var(--purple); background: transparent; color: var(--purple-mid); font-size: .82rem; cursor: pointer; }
+  .add-child-btn:hover { background: rgba(124,58,237,.15); }
+  .remove-child-btn { padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(248,113,113,.4); background: transparent; color: var(--red); font-size: .75rem; cursor: pointer; margin-left: auto; }
+
+  /* ===== BUTTONS ===== */
+  .btn-row { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 28px; }
+  .btn { padding: 12px 28px; border-radius: 10px; font-size: .92rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(124,58,237,.4); }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { border-color: var(--purple-mid); color: var(--purple-mid); }
+  .btn-submit { background: linear-gradient(135deg, #059669, #047857); color: #fff; padding: 14px 40px; font-size: 1rem; }
+  .btn-submit:hover { box-shadow: 0 8px 24px rgba(5,150,105,.4); transform: translateY(-1px); }
+
+  /* ===== ALERT / NOTE ===== */
+  .note { background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.3); border-radius: 10px; padding: 12px 16px; font-size: .83rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+  .note strong { color: var(--purple-mid); }
+
+  /* ===== RESULT PAGE ===== */
+  #page-result { animation: fadeIn .5s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .result-hero { text-align: center; padding: 28px 0 20px; }
+  .result-hero .score-big { font-size: 3.5rem; font-weight: 800; color: var(--purple-mid); }
+  .result-hero .score-label { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+  .result-hero .level-badge { display: inline-block; margin-top: 10px; padding: 6px 20px; border-radius: 20px; font-size: .9rem; font-weight: 700; }
+  .level-high { background: rgba(52,211,153,.2); color: var(--green); border: 1px solid var(--green); }
+  .level-mid { background: rgba(251,191,36,.2); color: var(--yellow); border: 1px solid var(--yellow); }
+  .level-low { background: rgba(248,113,113,.2); color: var(--red); border: 1px solid var(--red); }
+  .chart-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .chart-wrap canvas { max-height: 320px; }
+  .dim-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .dim-row:last-child { border-bottom: none; }
+  .dim-icon { font-size: 1.2rem; width: 28px; }
+  .dim-name { flex: 1; font-size: .88rem; }
+  .dim-bar-bg { flex: 2; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .dim-bar-fill { height: 100%; border-radius: 4px; }
+  .dim-score { font-size: .88rem; font-weight: 700; min-width: 44px; text-align: right; }
+  .child-result-section { margin-bottom: 20px; }
+  .child-result-section h3 { font-size: .95rem; font-weight: 700; color: var(--purple-mid); margin-bottom: 10px; }
+  .submit-confirm { text-align: center; padding: 20px; }
+  .submit-confirm .icon-big { font-size: 3rem; margin-bottom: 12px; }
+  .submit-confirm p { color: var(--muted); font-size: .9rem; line-height: 1.7; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 560px) {
+    .field-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.4rem; }
+    .likert-table th, .likert-table td { padding: 6px 2px; }
+  }
+
+  /* ===== REQUIRED MARK ===== */
+  .req { color: var(--red); margin-left: 2px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🌏 中国家庭海外发展诊断问卷</h1>
+  <h2>Chinese Family Overseas Venture Diagnostic Questionnaire</h2>
+  <span class="badge">Version 3.0 · 家庭五维系统模型</span>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="progress-label" id="progressLabel">第 1 步 / 共 6 步</span>
+</div>
+
+<!-- ===================== PAGE 0: INTRO ===================== -->
+<div class="page active" id="page-0">
+  <div class="card" style="margin-top:24px;">
+    <div class="section-title"><span class="icon">📋</span><span>问卷说明</span></div>
+    <div class="note">
+      <strong>本问卷基于"家庭五维系统模型"</strong>，从五个核心维度全面诊断中国家庭考虑海外发展的适配度。<br><br>
+      🧒 <strong>多孩家庭支持</strong>：每个出国孩子单独评估"子女特质"和"亲子教育"两个维度；"经济实力"、"家庭系统"、"父母适应力"为家庭层面共享，只填一次。<br><br>
+      🎂 <strong>年龄段自动适配</strong>：系统将根据您孩子的年龄自动显示对应题目集：<br>
+      &nbsp;&nbsp;&nbsp;🍼 幼儿期（6岁以下）｜ 📚 小学期（6-12岁）｜ 🎓 青少年期（13岁以上）<br><br>
+      ⏱️ <strong>预计填写时间</strong>：15-25分钟<br><br>
+      📊 <strong>填写完成后</strong>，系统将自动生成专属五维雷达图报告。
+    </div>
+    <div class="scale-legend">
+      <span><span class="dot">1</span>完全不符合</span>
+      <span><span class="dot">2</span>较不符合</span>
+      <span><span class="dot">3</span>一般</span>
+      <span><span class="dot">4</span>比较符合</span>
+      <span><span class="dot">5</span>完全符合</span>
+    </div>
+  </div>
+  <div class="btn-row">
+    <div></div>
+    <button class="btn btn-primary" onclick="goTo(1)">开始填写 →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 1: 填写人 + 家庭信息 ===================== -->
+<div class="page" id="page-1">
+  <div class="section-title"><span class="icon">👤</span><div><div>填写人信息</div><div class="section-subtitle">Part 1 · Respondent Information</div></div></div>
+
+  <div class="card">
+    <div class="field-row">
+      <div class="field"><label>姓名 / Name <span class="req">*</span></label><input type="text" id="f-name" placeholder="请输入姓名"></div>
+      <div class="field"><label>手机号 / Mobile <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="请输入手机号"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>微信号 / WeChat ID</label><input type="text" id="f-wechat" placeholder="请输入微信号"></div>
+      <div class="field"><label>与孩子的关系 <span class="req">*</span></label>
+        <select id="f-relation">
+          <option value="">请选择</option>
+          <option>父亲</option><option>母亲</option><option>继父</option><option>继母</option>
+          <option>祖父母/外祖父母</option><option>法定监护人</option><option>其他</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;"><span class="icon">🏠</span><div><div>家庭基本信息</div><div class="section-subtitle">Part 2 · Family Background</div></div></div>
+  <div class="card">
+    <div class="field-row">
+      <div class="field"><label>所在城市 / City <span class="req">*</span></label><input type="text" id="f-city" placeholder="例：上海"></div>
+      <div class="field"><label>家庭成员构成</label><input type="text" id="f-family" placeholder="例：父母+1孩"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>父母教育背景</label><input type="text" id="f-edu" placeholder="例：本科/硕士"></div>
+      <div class="field"><label>父母职业</label><input type="text" id="f-job" placeholder="例：医生/金融"></div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px;"><span class="icon">✈️</span><div><div>海外计划信息</div></div></div>
+  <div class="card">
+    <div class="field-row">
+      <div class="field"><label>出国方式 <span class="req">*</span></label>
+        <select id="f-mode">
+          <option value="">请选择</option>
+          <option>父母双方都陪孩子出国</option>
+          <option>一方陪读，一方留守国内</option>
+          <option>孩子单独出国（寄宿/监护人）</option>
+          <option>暂未决定</option>
+        </select>
+      </div>
+      <div class="field"><label>目标国家/地区</label><input type="text" id="f-country" placeholder="例：新加坡、泰国、英国"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>计划时间线</label><input type="text" id="f-timeline" placeholder="例：2025年9月"></div>
+      <div class="field"><label>年度预算范围</label><input type="text" id="f-budget" placeholder="例：50-80万/年"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(0)">← 上一步</button>
+    <button class="btn btn-primary" onclick="validateAndGoTo(2)">下一步 →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 2: 孩子信息 ===================== -->
+<div class="page" id="page-2">
+  <div class="section-title"><span class="icon">👶</span><div><div>孩子信息</div><div class="section-subtitle">Part 2.2 · Children Information</div></div></div>
+  <div class="note">请为每个<strong>出国孩子</strong>填写基本信息，系统将自动匹配对应年龄段的题目集。</div>
+
+  <div id="children-tabs-header">
+    <div class="child-tabs" id="child-tab-buttons"></div>
+  </div>
+  <div id="children-forms"></div>
+
+  <button class="add-child-btn" onclick="addChild()" id="add-child-global" style="margin-bottom:16px;">+ 添加孩子</button>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(1)">← 上一步</button>
+    <button class="btn btn-primary" onclick="validateChildrenAndGoTo(3)">下一步 →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 3: 维度一+二（每孩） ===================== -->
+<div class="page" id="page-3">
+  <div class="section-title"><span class="icon">🎓</span><div><div>子女特质 & 亲子教育</div><div class="section-subtitle">Dimension 1 & 2 · Per Child Assessment</div></div></div>
+  <div class="note">以下每个孩子需单独填写。<strong>系统已根据年龄自动切换题目集。</strong></div>
+  <div id="dim12-content"></div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(2)">← 上一步</button>
+    <button class="btn btn-primary" onclick="validateDim12AndGoTo(4)">下一步 →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 4: 维度三四五（家庭共享） ===================== -->
+<div class="page" id="page-4">
+  <div class="section-title"><span class="icon">💰</span><div><div>经济实力 · 家庭系统 · 父母适应力</div><div class="section-subtitle">Dimension 3, 4, 5 · Family Level</div></div></div>
+  <div class="note">⚠️ 以下三个维度为<strong>家庭层面共享</strong>，无论几个孩子，只填写一次。</div>
+
+  <!-- DIM 3 -->
+  <div class="card">
+    <div class="likert-header">
+      <span>💰</span><strong>维度三 · 经济实力</strong>
+    </div>
+    <div class="scale-legend"><span style="font-size:.78rem;color:var(--muted);">1=完全不符合 ··· 5=完全符合</span></div>
+    <table class="likert-table" id="table-dim3"></table>
+  </div>
+
+  <!-- DIM 4 -->
+  <div class="card">
+    <div class="likert-header">
+      <span>🏠</span><strong>维度四 · 家庭系统</strong>
+    </div>
+    <div class="scale-legend"><span style="font-size:.78rem;color:var(--muted);">1=完全不符合 ··· 5=完全符合</span></div>
+    <table class="likert-table" id="table-dim4"></table>
+  </div>
+
+  <!-- DIM 5 -->
+  <div class="card">
+    <div class="likert-header">
+      <span>🌍</span><strong>维度五 · 父母适应力</strong>
+    </div>
+    <div class="scale-legend"><span style="font-size:.78rem;color:var(--muted);">1=完全不符合 ··· 5=完全符合</span></div>
+    <table class="likert-table" id="table-dim5"></table>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(3)">← 上一步</button>
+    <button class="btn btn-primary" onclick="validateDim345AndGoTo(5)">查看报告 →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 5: 结果报告 ===================== -->
+<div class="page" id="page-result" style="display:none;">
+  <div id="result-content"></div>
+  <div class="btn-row" style="justify-content:center; gap:16px;">
+    <button class="btn btn-secondary" onclick="window.print()">🖨️ 打印报告</button>
+    <button class="btn btn-submit" onclick="submitForm()">✅ 提交并发送给顾问</button>
+  </div>
+  <div id="submit-status" style="text-align:center;margin-top:16px;font-size:.88rem;color:var(--muted);"></div>
+</div>
+
+<script>
+// ============================================================
+//  DATA DEFINITIONS
+// ============================================================
+const DIM3_ITEMS = [
+  ["3.1","我们家有稳定的现金流足以支撑海外生活3年以上","We have stable cash flow to support 3+ years abroad"],
+  ["3.2","我们已为海外教育准备了专项资金（含学费、保证金等）","We have dedicated funds for overseas education"],
+  ["3.3","我们对学费之外的隐形成本有充分预算（语言补习、camping等）","We have budgeted for hidden costs (tutoring, activities, etc.)"],
+  ["3.4","即使主要收入中断，家庭仍能维持海外开支至少12个月","Even if main income stops, we can sustain 12+ months"],
+  ["3.5","我们已实现"时间金钱双重可躺平"，或有可持续的现金流来源","We have sustainable passive or flexible income"],
+  ["3.6","我们有海外资产配置或投资规划","We have overseas asset allocation or investment planning"],
+  ["3.7","我们已规划好医疗保险和应急资金","Medical insurance and emergency funds are planned"],
+  ["3.8","我们的国内资产在父母离开后仍可有效管理","Domestic assets can be managed in our absence"],
+  ["3.9","我们有应对汇率波动和经济风险的准备","We are prepared for currency and economic risks"],
+  ["3.10","海外开支不会显著影响国内家庭其他成员的生活质量","Overseas expenses won't significantly impact others at home"],
+];
+const DIM4_ITEMS = [
+  ["4.1","父母双方在子女海外计划上完全达成共识，而非"边走边试试看"","Both parents fully agree on the overseas plan"],
+  ["4.2","我们已明确出国方式（双方同行/一方陪读/其他），并对此达成共识","The arrangement is decided and agreed upon"],
+  ["4.3","陪同孩子的家长有足够的时间和精力专注于孩子和生活","The accompanying parent has sufficient time and energy"],
+  ["4.4","我们已明确隐形支撑的分工（开车、做饭、家务、与学校沟通等）","Division of household and school duties is clear"],
+  ["4.5","我们已规划好谁负责陪孩子参加活动、学习、适应","Who accompanies child for activities and learning is planned"],
+  ["4.6","我们已妥善安排好国内事务（房产、长辈照护、事业等）","Domestic affairs (property, elderly care, career) are arranged"],
+  ["4.7","夫妻/伴侣关系稳固，能承受可能的分居或共同适应压力","Our relationship is stable under separation or joint adaptation stress"],
+  ["4.8","家庭长辈对此计划支持并能提供后援","Extended family supports and can provide backup"],
+  ["4.9","我们能抵御外界眼光和社交压力的持续影响","We can resist external judgments and social pressure"],
+  ["4.10","我们有清晰的家庭沟通机制（如定期视频、家庭会议）","Clear family communication mechanisms are in place"],
+  ["4.11","出现家庭矛盾时我们有健康的解决方式","We have healthy ways to resolve family conflicts"],
+];
+const DIM5_ITEMS = [
+  ["5.1","陪读家长的英语（或目的地语言）能应对日常生活和学校沟通","Accompanying parent's language skills handle daily life and school"],
+  ["5.2","陪读家长能独立处理租房、就医、银行、孩子学校事务","Can independently handle housing, medical, banking, school"],
+  ["5.3","我们对目的地的文化、礼仪和生活方式有充分了解","We understand destination culture and lifestyle"],
+  ["5.4","陪读家长能承受长时间的孤独感，有自我消化情绪的能力","Accompanying parent can handle prolonged loneliness"],
+  ["5.5","陪读家长有自己的事业、兴趣或学习目标，价值感不会被压缩","Has own career, interests, or goals to maintain sense of value"],
+  ["5.6","陪读家长不会陷入"意义感反复拷问"的困境","Won't fall into existential questioning about meaning"],
+  ["5.7","陪读家长性格开朗，容易结识新朋友","Outgoing personality, makes friends easily"],
+  ["5.8","陪读家长曾有海外生活、留学或长期出国经历","Has prior overseas living or study experience"],
+  ["5.9","我们能接受并尊重不同的价值观和生活方式","Open to and respectful of different values and lifestyles"],
+  ["5.10","我们已有海外人脉、华人社区或学校老师等支持网络","Have overseas network, Chinese community, or teacher contacts"],
+  ["5.11","面对突发情况（疾病、政策变化）我们有应对预案","Have contingency plans for emergencies (illness, policy changes)"],
+];
+
+const DIM1_ITEMS = {
+  A: [ // Early Childhood <6
+    ["1.A.1","我的孩子对陌生人和新环境表现出基本的适应力，不会过度恐惧","Shows basic adaptability without excessive fear"],
+    ["1.A.2","我的孩子情绪相对稳定，不容易出现长时间的哭闹或退缩","Emotionally stable, without prolonged crying or withdrawal"],
+    ["1.A.3","我的孩子对新鲜事物保有好奇心和探索欲","Shows curiosity and interest in new things"],
+    ["1.A.4","我的孩子愿意尝试新的食物、玩具和活动","Willing to try new foods, toys, and activities"],
+    ["1.A.5","我的孩子有规律的作息（睡眠、进食、活动）","Has regular routines (sleep, meals, activities)"],
+    ["1.A.6","我的孩子能在父母短暂离开时保持安全感","Maintains security during brief parental separation"],
+    ["1.A.7","我的孩子能基本表达自己的需求和情绪","Can basically express needs and emotions"],
+    ["1.A.8","我的孩子对其他小朋友表现出兴趣和友好","Shows interest and friendliness toward other children"],
+    ["1.A.9","我的孩子在生活自理上有适龄的萌芽（穿衣、吃饭等）","Shows age-appropriate self-care (dressing, eating)"],
+    ["1.A.10","我的孩子对中英文绘本/儿歌等保有兴趣","Shows interest in Chinese/English picture books and rhymes"],
+    ["1.A.11","我的孩子在面对小挫折时能较快恢复","Recovers quickly from small setbacks"],
+    ["1.A.12","我的孩子与主要照顾者建立了健康的依恋关系","Has healthy attachment with primary caregiver(s)"],
+  ],
+  B: [ // Primary 6-12
+    ["1.B.1","我的孩子能够主动适应新环境和陌生人","Adapts well to new environments and strangers"],
+    ["1.B.2","我的孩子有强大的心理韧性，面对挫折能自我调节","Has strong psychological resilience"],
+    ["1.B.3","我的孩子在学习上有较强的自驱力，不依赖外部监督","Strong self-motivation, not reliant on supervision"],
+    ["1.B.4","我的孩子有每天阅读英文原版书籍30分钟以上的习惯","Reads original English books 30+ minutes daily"],
+    ["1.B.5","我的孩子能保持中文阅读和书写习惯，不会丢失母语","Maintains Chinese reading and writing habits"],
+    ["1.B.6","我的孩子使用iPad/电脑时能自控，不会沉迷游戏或娱乐","Can self-regulate iPad/computer use"],
+    ["1.B.7","我的孩子有主动提问的意识，遇到不懂的会及时寻求解答","Actively asks questions and seeks answers"],
+    ["1.B.8","我的孩子能独立搜集信息并完成一个project","Can independently complete a project"],
+    ["1.B.9","我的孩子具有良好的生活自理能力（饮食、作息、整理等）","Has good daily self-care skills"],
+    ["1.B.10","即使语言能力暂时落后，孩子仍保有学习兴趣和好奇心","Retains learning interest despite language gaps"],
+    ["1.B.11","我的孩子能与不同背景的同龄人友好相处，有充分的表达力","Gets along with diverse peers, expressive"],
+    ["1.B.12","我的孩子的学习动力来自内在兴趣，而非排名或与他人比较","Motivation from internal interest, NOT rankings"],
+  ],
+  C: [ // Adolescent 13+
+    ["1.C.1","我的孩子有强大的心理韧性和自我调节能力，能应对学业与社交压力","Strong resilience under academic and social stress"],
+    ["1.C.2","我的孩子有清晰的自我认同，不容易随波逐流","Clear sense of self-identity"],
+    ["1.C.3","我的孩子有较强的自主学习能力，能制定并执行学习计划","Can independently plan and execute study schedule"],
+    ["1.C.4","我的孩子能阅读较有深度的英文原版材料","Can read substantial English materials"],
+    ["1.C.5","我的孩子能保持中文的高水平表达和书写，避免母语退化","Maintains high-level Chinese expression"],
+    ["1.C.6","我的孩子能合理使用电子产品，平衡学习、娱乐与社交","Uses electronics responsibly"],
+    ["1.C.7","我的孩子具备批判性思维，能独立思考并提出自己的观点","Has critical thinking and independent viewpoints"],
+    ["1.C.8","我的孩子能独立完成研究类project，包括信息搜集、分析、呈现","Can independently complete research projects"],
+    ["1.C.9","我的孩子在生活、健康、安全等方面已具备自我管理能力","Manages own life, health, and safety"],
+    ["1.C.10","我的孩子对自己的兴趣方向、未来发展有初步思考","Has begun thinking about future direction"],
+    ["1.C.11","我的孩子能主动建立和维护跨文化、跨背景的同伴关系","Proactively builds cross-cultural relationships"],
+    ["1.C.12","我的孩子的学习动力来自内在兴趣和长期目标，而非排名或比较","Motivation from internal interest and long-term goals"],
+  ],
+};
+
+const DIM2_ITEMS = {
+  A: [ // Early Childhood
+    ["2.A.1","我和孩子建立了安全、温暖的依恋关系","Built a secure, warm attachment with my child"],
+    ["2.A.2","我能敏锐捕捉孩子的情绪信号并给予及时回应","Sensitively read emotional cues and respond promptly"],
+    ["2.A.3","我了解孩子的发展阶段特点，不做超龄要求","Understand developmental stage, no age-inappropriate demands"],
+    ["2.A.4","出国是为了给孩子更好的成长环境，而非为了"逃避"国内压力","Going abroad to pursue growth, NOT escape pressure"],
+    ["2.A.5","即使孩子未来发展不达期待，我们也认可这段经历的价值","Value this experience regardless of outcomes"],
+    ["2.A.6","我有充足的时间和精力陪伴幼龄孩子的过渡和适应","Have ample time and energy for the young child's transition"],
+    ["2.A.7","我了解适龄的中英文启蒙资源，能为孩子搭建语言环境","Know age-appropriate language resources"],
+    ["2.A.8","我懂得通过游戏、绘本、互动来促进孩子的成长","Promote growth through play, books, interaction"],
+    ["2.A.9","我会避免在幼龄阶段过度施压或过早进行学术训练","Avoid over-pressuring or premature academic training"],
+    ["2.A.10","我对海外幼儿园/学前教育体系有充分了解","Understand overseas kindergarten/preschool systems"],
+    ["2.A.11","我能识别孩子的心理变化（如分离焦虑、退行）并及时寻求帮助","Identify psychological changes and seek help"],
+    ["2.A.12","我们有共同的家庭价值观，能为孩子提供稳定的成长根基","Share family values for stable foundations"],
+  ],
+  B: [ // Primary
+    ["2.B.1","我和孩子之间有开放、信任的沟通氛围","Open, trusting communication with my child"],
+    ["2.B.2","我了解孩子的兴趣、压力和情绪状态","Understand child's interests, stress, and emotions"],
+    ["2.B.3","我能在尊重孩子意愿的基础上引导他/她做选择","Guide child while respecting their wishes"],
+    ["2.B.4","孩子主动认同并期待此次海外计划","Child actively endorses the overseas plan"],
+    ["2.B.5","出国是为了主动追求多元体验和成长，而非为了"逃避"国内压力","Pursue growth, NOT escape pressure"],
+    ["2.B.6","即使孩子未来未进入"名校"，我们也认可这段经历的价值","Value experience even without 'top schools'"],
+    ["2.B.7","我有能力陪伴孩子度过文化和学业适应期","Can support child through adaptation period"],
+    ["2.B.8","我懂得鼓励孩子而非过度施压","Encourage rather than over-pressure"],
+    ["2.B.9","我能适度放手，让孩子学会独立","Let go appropriately for independence"],
+    ["2.B.10","我对海外教育体系（IB/AP/ALEVEL）有充分了解","Understand overseas systems (IB/AP/A-LEVEL)"],
+    ["2.B.11","我能识别孩子的心理变化并及时寻求专业帮助","Identify changes and seek professional help"],
+    ["2.B.12","我们有共同的家庭价值观，孩子海外不会迷失方向","Share family values"],
+  ],
+  C: [ // Adolescent
+    ["2.C.1","我和青春期的孩子之间有开放、平等、信任的沟通氛围","Open, equal, trusting communication with my adolescent"],
+    ["2.C.2","我了解孩子的兴趣、价值观、社交圈和情绪状态","Understand interests, values, social circles, emotions"],
+    ["2.C.3","我尊重孩子的自主权，决策中给予孩子充分话语权","Respect autonomy, give substantial say in decisions"],
+    ["2.C.4","孩子主动认同此次海外计划，并参与了规划过程","Child endorses and was involved in planning"],
+    ["2.C.5","出国是为了主动追求多元体验和成长，而非为了"逃避"国内压力","Pursue growth, NOT escape pressure"],
+    ["2.C.6","即使孩子未来未进入"名校"，我们也认可这段经历的价值","Value experience even without 'top schools'"],
+    ["2.C.7","我能在适度放手与必要支持之间找到平衡","Balance giving space with necessary support"],
+    ["2.C.8","我懂得倾听而非说教，能与孩子讨论而非单向指导","Listen rather than lecture, discuss rather than instruct"],
+    ["2.C.9","我尊重孩子的隐私和独立空间，避免过度介入","Respect privacy and independent space"],
+    ["2.C.10","我对海外教育体系（IB/AP/ALEVEL）和升学路径有充分了解","Understand overseas systems and college pathways"],
+    ["2.C.11","我能识别青春期常见的心理问题并及时寻求专业帮助","Identify adolescent issues and seek professional help"],
+    ["2.C.12","我们有共同的家庭价值观，孩子海外不会迷失方向","Share family values"],
+  ],
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentPage = 0;
+const TOTAL_PAGES = 6;
+let children = []; // [{name, age, grade, schoolType, ageGroup:'A'|'B'|'C'}]
+let charts = [];
+
+// ============================================================
+//  PAGE NAVIGATION
+// ============================================================
+function goTo(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = n === 5 ? document.getElementById('page-result') : document.getElementById('page-' + n);
+  if (target) { target.style.display = ''; target.classList.add('active'); }
+  currentPage = n;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const pct = Math.round((currentPage / 5) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = '第 ' + (currentPage + 1) + ' 步 / 共 6 步';
+}
+
+// ============================================================
+//  VALIDATION
+// ============================================================
+function validateAndGoTo(n) {
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const relation = document.getElementById('f-relation').value;
+  const city = document.getElementById('f-city').value.trim();
+  const mode = document.getElementById('f-mode').value;
+  if (!name) { alert('请填写姓名'); return; }
+  if (!phone) { alert('请填写手机号'); return; }
+  if (!relation) { alert('请选择与孩子的关系'); return; }
+  if (!city) { alert('请填写所在城市'); return; }
+  if (!mode) { alert('请选择出国方式'); return; }
+  goTo(n);
+}
+
+function validateChildrenAndGoTo(n) {
+  if (children.length === 0) { alert('请至少添加一个孩子的信息'); return; }
+  for (let i = 0; i < children.length; i++) {
+    const c = getChildFormData(i);
+    if (!c.name) { alert(`请填写孩子${i+1}的姓名`); return; }
+    if (!c.age) { alert(`请填写孩子${i+1}的年龄`); return; }
+  }
+  // Save children data
+  children = children.map((_, i) => getChildFormData(i));
+  buildDim12();
+  goTo(n);
+}
+
+function validateDim12AndGoTo(n) {
+  for (let ci = 0; ci < children.length; ci++) {
+    for (let q = 1; q <= 12; q++) {
+      const name = `d1_c${ci}_q${q}`;
+      if (!document.querySelector(`input[name="${name}"]:checked`)) {
+        alert(`请完成孩子${ci+1}的"子女特质"第${q}题`);
+        return;
+      }
+    }
+    for (let q = 1; q <= 12; q++) {
+      const name = `d2_c${ci}_q${q}`;
+      if (!document.querySelector(`input[name="${name}"]:checked`)) {
+        alert(`请完成孩子${ci+1}的"亲子教育"第${q}题`);
+        return;
+      }
+    }
+  }
+  buildDim345();
+  goTo(n);
+}
+
+function validateDim345AndGoTo(n) {
+  const dims = { 'dim3': 10, 'dim4': 11, 'dim5': 11 };
+  const names = { dim3: '经济实力', dim4: '家庭系统', dim5: '父母适应力' };
+  for (const [dim, cnt] of Object.entries(dims)) {
+    for (let q = 1; q <= cnt; q++) {
+      const rName = `${dim}_q${q}`;
+      if (!document.querySelector(`input[name="${rName}"]:checked`)) {
+        alert(`请完成"${names[dim]}"第${q}题`);
+        return;
+      }
+    }
+  }
+  buildResult();
+  goTo(5);
+}
+
+// ============================================================
+//  CHILDREN MANAGEMENT
+// ============================================================
+function getAgeGroup(age) {
+  const a = parseInt(age);
+  if (isNaN(a)) return 'B';
+  if (a < 6) return 'A';
+  if (a <= 12) return 'B';
+  return 'C';
+}
+function ageGroupLabel(g) {
+  return g === 'A' ? '🍼 幼儿期' : g === 'B' ? '📚 小学期' : '🎓 青少年期';
+}
+
+function renderChildTabs() {
+  const tabs = document.getElementById('child-tab-buttons');
+  tabs.innerHTML = '';
+  children.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'child-tab-btn';
+    btn.textContent = c.name || `孩子${i+1}`;
+    btn.onclick = () => {};
+    tabs.appendChild(btn);
+  });
+}
+
+function addChild() {
+  if (children.length >= 3) { alert('最多支持3个孩子'); return; }
+  children.push({ name: '', age: '', grade: '', schoolType: '', ageGroup: 'B' });
+  renderChildForms();
+}
+
+function removeChild(i) {
+  children.splice(i, 1);
+  renderChildForms();
+}
+
+function renderChildForms() {
+  const container = document.getElementById('children-forms');
+  container.innerHTML = '';
+  children.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.id = `child-form-${i}`;
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <strong style="color:var(--purple-mid);">👶 孩子 ${i+1}</strong>
+        ${children.length > 1 ? `<button class="remove-child-btn" onclick="removeChild(${i})">✕ 移除</button>` : ''}
+      </div>
+      <div class="field-row">
+        <div class="field"><label>姓名/昵称 <span class="req">*</span></label><input type="text" id="c${i}-name" placeholder="请输入" value="${c.name||''}"></div>
+        <div class="field"><label>年龄 <span class="req">*</span></label><input type="number" id="c${i}-age" placeholder="岁" min="1" max="20" value="${c.age||''}" onchange="onAgeChange(${i})"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>年级</label><input type="text" id="c${i}-grade" placeholder="例：小学三年级" value="${c.grade||''}"></div>
+        <div class="field"><label>当前学校类型</label>
+          <select id="c${i}-school">
+            <option value="">请选择</option>
+            <option ${c.schoolType==='公立'?'selected':''}>公立</option>
+            <option ${c.schoolType==='私立'?'selected':''}>私立</option>
+            <option ${c.schoolType==='公立国际部'?'selected':''}>公立国际部</option>
+            <option ${c.schoolType==='国际学校'?'selected':''}>国际学校</option>
+            <option ${c.schoolType==='其他'?'selected':''}>其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row single">
+        <div class="field">
+          <label>题目集（根据年龄自动选择，也可手动调整）</label>
+          <div class="radio-group" id="c${i}-agegroup">
+            <label><input type="radio" name="ag${i}" value="A" ${(c.ageGroup||getAgeGroup(c.age))==='A'?'checked':''}> 🍼 幼儿期 (6岁以下)</label>
+            <label><input type="radio" name="ag${i}" value="B" ${(c.ageGroup||getAgeGroup(c.age))==='B'?'checked':''}> 📚 小学期 (6-12岁)</label>
+            <label><input type="radio" name="ag${i}" value="C" ${(c.ageGroup||getAgeGroup(c.age))==='C'?'checked':''}> 🎓 青少年期 (13岁以上)</label>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  if (children.length === 0) {
+    container.innerHTML = '<div class="note" style="text-align:center;">还没有添加孩子，点击下方按钮添加</div>';
+  }
+  document.getElementById('add-child-global').style.display = children.length >= 3 ? 'none' : '';
+}
+
+function onAgeChange(i) {
+  const age = document.getElementById(`c${i}-age`).value;
+  const g = getAgeGroup(age);
+  const radios = document.querySelectorAll(`input[name="ag${i}"]`);
+  radios.forEach(r => { r.checked = (r.value === g); });
+}
+
+function getChildFormData(i) {
+  const ageGroupEl = document.querySelector(`input[name="ag${i}"]:checked`);
+  return {
+    name: (document.getElementById(`c${i}-name`)?.value || '').trim(),
+    age: document.getElementById(`c${i}-age`)?.value || '',
+    grade: document.getElementById(`c${i}-grade`)?.value || '',
+    schoolType: document.getElementById(`c${i}-school`)?.value || '',
+    ageGroup: ageGroupEl ? ageGroupEl.value : getAgeGroup(document.getElementById(`c${i}-age`)?.value || ''),
+  };
+}
+
+// ============================================================
+//  BUILD LIKERT TABLE
+// ============================================================
+function buildLikertTable(tableEl, items, namePrefix) {
+  tableEl.innerHTML = `
+    <thead>
+      <tr>
+        <th class="q-col">题目</th>
+        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${items.map((item, idx) => `
+        <tr>
+          <td class="q-col">
+            <strong>${item[0]}</strong><br>${item[1]}
+            <span class="en">${item[2]}</span>
+          </td>
+          ${[1,2,3,4,5].map(v => `
+            <td class="r-col">
+              <input type="radio" name="${namePrefix}_q${idx+1}" value="${v}" required>
+            </td>
+          `).join('')}
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+}
+
+// ============================================================
+//  BUILD DIM 1+2 (per child)
+// ============================================================
+function buildDim12() {
+  const container = document.getElementById('dim12-content');
+  container.innerHTML = '';
+  children.forEach((c, ci) => {
+    const g = c.ageGroup;
+    const items1 = DIM1_ITEMS[g];
+    const items2 = DIM2_ITEMS[g];
+    const section = document.createElement('div');
+    section.className = 'child-result-section';
+    section.innerHTML = `
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;gap:10px;align-items:center;">
+        <span style="font-size:1.2rem;">👶</span>
+        <div>
+          <strong style="color:#fff;">${c.name || '孩子'+(ci+1)}</strong>
+          <span style="margin-left:8px;font-size:.8rem;color:var(--purple-mid);">${ageGroupLabel(g)}</span>
+          <span style="margin-left:8px;font-size:.8rem;color:var(--muted);">${c.age}岁</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="likert-header">
+          <span>🎓</span><strong>维度一 · 子女特质</strong>
+          <span class="ageband">${ageGroupLabel(g)}</span>
+        </div>
+        <div class="scale-legend"><span style="font-size:.78rem;color:var(--muted);">1=完全不符合 ··· 5=完全符合</span></div>
+        <table class="likert-table" id="table-d1-c${ci}"></table>
+      </div>
+
+      <div class="card">
+        <div class="likert-header">
+          <span>❤️</span><strong>维度二 · 亲子教育</strong>
+          <span class="ageband">${ageGroupLabel(g)}</span>
+        </div>
+        <div class="scale-legend"><span style="font-size:.78rem;color:var(--muted);">1=完全不符合 ··· 5=完全符合</span></div>
+        <table class="likert-table" id="table-d2-c${ci}"></table>
+      </div>
+    `;
+    container.appendChild(section);
+
+    // Build tables
+    setTimeout(() => {
+      const t1 = document.getElementById(`table-d1-c${ci}`);
+      const t2 = document.getElementById(`table-d2-c${ci}`);
+      if (t1) buildLikertTable(t1, items1, `d1_c${ci}`);
+      if (t2) buildLikertTable(t2, items2, `d2_c${ci}`);
+    }, 0);
+  });
+}
+
+// ============================================================
+//  BUILD DIM 3+4+5
+// ============================================================
+function buildDim345() {
+  buildLikertTable(document.getElementById('table-dim3'), DIM3_ITEMS, 'dim3');
+  buildLikertTable(document.getElementById('table-dim4'), DIM4_ITEMS, 'dim4');
+  buildLikertTable(document.getElementById('table-dim5'), DIM5_ITEMS, 'dim5');
+}
+
+// ============================================================
+//  SCORING
+// ============================================================
+function getScore(namePrefix, count) {
+  let total = 0;
+  let answered = 0;
+  for (let q = 1; q <= count; q++) {
+    const el = document.querySelector(`input[name="${namePrefix}_q${q}"]:checked`);
+    if (el) { total += parseInt(el.value); answered++; }
+  }
+  if (answered === 0) return 0;
+  return Math.round((total / (count * 5)) * 100);
+}
+
+function getLevelInfo(score) {
+  if (score >= 80) return { label: '高度就绪', cls: 'level-high', color: '#34d399', note: '该维度优秀，可继续保持' };
+  if (score >= 60) return { label: '中度就绪', cls: 'level-mid', color: '#fbbf24', note: '基本达标，建议针对性提升' };
+  if (score >= 40) return { label: '需关注', cls: 'level-low', color: '#f87171', note: '存在明显短板，需重点改善' };
+  return { label: '重点提升', cls: 'level-low', color: '#ef4444', note: '风险较大，建议暂缓决策' };
+}
+
+function scoreToBarColor(s) {
+  if (s >= 80) return '#34d399';
+  if (s >= 60) return '#fbbf24';
+  if (s >= 40) return '#f87171';
+  return '#ef4444';
+}
+
+// ============================================================
+//  BUILD RESULT
+// ============================================================
+function buildResult() {
+  // Destroy old charts
+  charts.forEach(c => { try { c.destroy(); } catch(e){} });
+  charts = [];
+
+  const dim3Score = getScore('dim3', 10);
+  const dim4Score = getScore('dim4', 11);
+  const dim5Score = getScore('dim5', 11);
+
+  const childResults = children.map((c, ci) => {
+    const d1 = getScore(`d1_c${ci}`, 12);
+    const d2 = getScore(`d2_c${ci}`, 12);
+    const avg = Math.round((d1 + d2 + dim3Score + dim4Score + dim5Score) / 5);
+    return { ...c, d1, d2, d3: dim3Score, d4: dim4Score, d5: dim5Score, avg };
+  });
+
+  const familyAvg = childResults.length > 0
+    ? Math.round(childResults.reduce((s, c) => s + c.avg, 0) / childResults.length)
+    : 0;
+
+  const fLevel = getLevelInfo(familyAvg);
+
+  let html = `
+    <div class="result-hero">
+      <div class="score-big">${familyAvg}</div>
+      <div class="score-label">家庭整体综合得分 / 100</div>
+      <div class="level-badge ${fLevel.cls}">${fLevel.label}</div>
+    </div>
+  `;
+
+  // Per child
+  childResults.forEach((c, ci) => {
+    const cLevel = getLevelInfo(c.avg);
+    html += `
+      <div class="child-result-section">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <span style="font-size:1.2rem;">👶</span>
+            <div>
+              <strong>${c.name || '孩子'+(ci+1)}</strong>
+              <span style="margin-left:8px;font-size:.8rem;color:var(--purple-mid);">${ageGroupLabel(c.ageGroup)}</span>
+              <span style="margin-left:8px;font-size:.8rem;color:var(--muted);">${c.age}岁</span>
+            </div>
+            <span class="level-badge ${cLevel.cls}" style="margin-left:auto;">${c.avg}分 · ${cLevel.label}</span>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="radar-c${ci}" height="280"></canvas>
+          </div>
+
+          <div>
+            ${[
+              { icon:'🎓', name:'子女特质', score: c.d1 },
+              { icon:'❤️', name:'亲子教育', score: c.d2 },
+              { icon:'💰', name:'经济实力', score: c.d3 },
+              { icon:'🏠', name:'家庭系统', score: c.d4 },
+              { icon:'🌍', name:'父母适应力', score: c.d5 },
+            ].map(d => `
+              <div class="dim-row">
+                <span class="dim-icon">${d.icon}</span>
+                <span class="dim-name">${d.name}</span>
+                <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:${d.score}%;background:${scoreToBarColor(d.score)};"></div></div>
+                <span class="dim-score" style="color:${scoreToBarColor(d.score)};">${d.score}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  // Interpretation
+  html += `
+    <div class="card">
+      <div class="section-title"><span class="icon">📊</span><span>维度解读与建议</span></div>
+      ${[
+        { icon:'💰', name:'经济实力', score: dim3Score },
+        { icon:'🏠', name:'家庭系统', score: dim4Score },
+        { icon:'🌍', name:'父母适应力', score: dim5Score },
+      ].map(d => {
+        const l = getLevelInfo(d.score);
+        return `
+          <div class="dim-row">
+            <span class="dim-icon">${d.icon}</span>
+            <span class="dim-name" style="min-width:80px;">${d.name}</span>
+            <div class="dim-bar-bg"><div class="dim-bar-fill" style="width:${d.score}%;background:${l.color};"></div></div>
+            <span class="dim-score" style="color:${l.color};">${d.score}</span>
+            <span style="font-size:.78rem;color:var(--muted);margin-left:8px;min-width:140px;">${l.note}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  document.getElementById('result-content').innerHTML = html;
+
+  // Draw charts after DOM update
+  setTimeout(() => {
+    childResults.forEach((c, ci) => {
+      const ctx = document.getElementById(`radar-c${ci}`);
+      if (!ctx) return;
+      const ch = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['子女特质', '亲子教育', '经济实力', '家庭系统', '父母适应力'],
+          datasets: [{
+            label: c.name || `孩子${ci+1}`,
+            data: [c.d1, c.d2, c.d3, c.d4, c.d5],
+            backgroundColor: 'rgba(124,58,237,0.25)',
+            borderColor: '#a78bfa',
+            borderWidth: 2,
+            pointBackgroundColor: '#a78bfa',
+            pointRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { stepSize: 20, color: '#9d8ec4', font: { size: 11 }, backdropColor: 'transparent' },
+              grid: { color: 'rgba(61,45,107,0.7)' },
+              angleLines: { color: 'rgba(61,45,107,0.7)' },
+              pointLabels: { color: '#e2d9f3', font: { size: 12 } },
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#e2d9f3' } }
+          }
+        }
+      });
+      charts.push(ch);
+    });
+  }, 100);
+
+  // Store result data globally
+  window._resultData = {
+    submittedAt: new Date().toISOString(),
+    respondent: {
+      name: document.getElementById('f-name').value,
+      phone: document.getElementById('f-phone').value,
+      wechat: document.getElementById('f-wechat').value,
+      relation: document.getElementById('f-relation').value,
+      city: document.getElementById('f-city').value,
+      family: document.getElementById('f-family').value,
+      edu: document.getElementById('f-edu').value,
+      job: document.getElementById('f-job').value,
+      mode: document.getElementById('f-mode').value,
+      country: document.getElementById('f-country').value,
+      timeline: document.getElementById('f-timeline').value,
+      budget: document.getElementById('f-budget').value,
+    },
+    familyScore: familyAvg,
+    familyLevel: fLevel.label,
+    dim3Score, dim4Score, dim5Score,
+    children: childResults,
+  };
+}
+
+// ============================================================
+//  飞书配置 (你只需要修改这里)
+// ============================================================
+const FEISHU = {
+  // 飞书多维表格 App Token (在多维表格URL里：https://xxxx.feishu.cn/bitable/MFyjRKxx/) / app_token = MFyjRKxx
+  APP_TOKEN:  'YOUR_APP_TOKEN_HERE',
+
+  // 多维表格的 Table ID (在表格URL里：.../tblxxx/...)
+  TABLE_ID:  'YOUR_TABLE_ID_HERE',
+
+  // 飞书 tenant_access_token (在飞书开放平台创建自建应用后获取)
+  // 获取方式：后台 curl https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal
+  ACCESS_TOKEN: 'YOUR_TENANT_ACCESS_TOKEN_HERE',
+
+  // 飞书群机器人 Webhook URL (在群里添加机器人后获取)
+  WEBHOOK_URL: 'YOUR_WEBHOOK_URL_HERE',
+};
+
+// ============================================================
+//  SUBMIT → 飞书多维表格 + 飞书群通知
+// ============================================================
+async function submitForm() {
+  const data = window._resultData;
+  if (!data) { alert('请先完成问卷'); return; }
+
+  const st = document.getElementById('submit-status');
+  st.textContent = '提交中...';
+
+  // ---- 1. 写入飞书多维表格 ----
+  const r = data.respondent || {};
+  const children = data.children || [];
+
+  // 构造多维表格 fields (字段名需与你的多维表格列名一致)
+  // 建议列名：提交时间、姓名、手机、微信号、关系、城市、出国方式、目标国家、家庭得分、家庭等级、孩子信息(JSON)
+  const now = new Date().toLocaleString('zh-CN', { timeZone:'Asia/Shanghai' });
+
+  // 孩子信息汇总为文字
+  const childSummary = children.map((c,i) => {
+    const ag = c.ageGroup==='A'?'幼儿期':c.ageGroup==='B'?'小学期':'青少年期';
+    return `孩子${i+1}(${c.name} ${c.age}岁 ${ag}): 子女特质${c.d1} 亲子教育${c.d2} 综合${c.avg}`;
+  }).join('；');
+
+  const fields = {
+    '提交时间': now,
+    '姓名':    r.name || '',
+    '手机':    r.phone || '',
+    '微信号':  r.wechat || '',
+    '关系':    r.relation || '',
+    '城市':    r.city || '',
+    '出国方式': r.mode || '',
+    '目标国家': r.country || '',
+    '家庭综合得分': String(data.familyScore),
+    '家庭等级':   data.familyLevel || '',
+    '孩子详情':   childSummary,
+  };
+
+  let bitableOK = false;
+  try {
+    const resp = await fetch(
+      `https://open.feishu.cn/open-apis/bitable/v1/apps/${FEISHU.APP_TOKEN}/tables/${FEISHU.TABLE_ID}/records`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${FEISHU.ACCESS_TOKEN}`,
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({ fields }),
+      }
+    );
+    const j = await resp.json();
+    if (j.code === 0) { bitableOK = true; }
+    else { console.warn('Bitable error:', j); }
+  } catch(e) { console.warn('Bitable fetch error:', e); }
+
+  // ---- 2. 飞书群机器人通知 ----
+  const dimSum = `子女特质- / 亲子教育- / 经济${data.dim3Score} / 家庭${data.dim4Score} / 适应${data.dim5Score}`;
+  const levelEmoji = data.familyScore >= 80 ? '🟢' : data.familyScore >= 60 ? '🟡' : '🔴';
+
+  const webhookBody = {
+    'msg_type': 'interactive',
+    'card': {
+      'config': { 'wide_screen_mode': true },
+      'header': {
+        'title': { 'tag': 'plain_text', 'content': `【家庭诊断】${r.name} ${data.familyScore}分 ${data.familyLevel}` },
+        'template': data.familyScore >= 80 ? 'green' : data.familyScore >= 60 ? 'orange' : 'red',
+      },
+      'elements': [
+        { 'tag':'div', 'text':{ 'tag':'lark_md','content':`**📞 手机：** ${r.phone}\n**💬 微信：** ${r.wechat||'-'}\n**📍 城市：** ${r.city}\n**✈️ 出国方式：** ${r.mode}\n**🎯 目标：** ${r.country||'-'}\n**📊 家庭得分：** ${levelEmoji} **${data.familyScore}分** (${data.familyLevel})`}},
+        { 'tag':'hr' },
+        { 'tag':'div', 'text':{ 'tag':'lark_md','content':`**📈 各维度得分**\n经济 ${data.dim3Score} · 家庭 ${data.dim4Score} · 适应 ${data.dim5Score}\n\n**👶 孩子详情**\n${childSummary}`}},
+        { 'tag':'hr' },
+        { 'tag':'div', 'text':{ 'tag':'lark_md','content':`⏰ 提交时间：${now}\n> 请尽快与客户联系，提供针对性咨询建议！`}},
+      ],
+    }
+  };
+
+  let webhookOK = false;
+  try {
+    const resp = await fetch(FEISHU.WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookBody),
+    });
+    const j = await resp.json();
+    if (j.code === 0 || j.StatusCode === 0) { webhookOK = true; }
+  } catch(e) { console.warn('Webhook error:', e); }
+
+  // ---- 3. 提示用户 ----
+  if (bitableOK || webhookOK) {
+    st.innerHTML = `
+      <div class="submit-confirm">
+        <div class="icon-big">✅</div>
+        <p style="color:#34d399;font-weight:700;font-size:1rem;margin-bottom:8px;">问卷已成功提交！</p>
+        <p>顾问将在24小时内与您联系，深度解读您的家庭诊断报告。</p>
+      </div>
+    `;
+  } else {
+    st.innerHTML = `
+      <div class="submit-confirm">
+        <div class="icon-big">⚠️</div>
+        <p style="color:#fbb024;font-weight:700;font-size:1rem;margin-bottom:8px;">提交遇到问题</p>
+        <p>请截图此报告页面，直接微信发送给顾问。</p>
+      </div>
+    `;
+  }
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  // Add first child by default
+  addChild();
+  buildDim345(); // pre-build dim345 tables
+});
+</script>
+</body>
+</html>
