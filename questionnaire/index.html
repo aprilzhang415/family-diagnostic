@@ -929,7 +929,6 @@ function updateDimBtn(key) {
 }
 
 // ============ SUBMIT ============
-// ⚠️ 部署时请将下面URL替换为你的Google Apps Script Web App URL
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzJ2KqK9ZgV1XhLmgIm_c2gf8scrUgnxeQa03u6WQzUzGWWNKMXk3yqOy4yYqNdopDA7g/exec';
 
 async function submitForm() {
@@ -961,9 +960,6 @@ async function submitForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     }).catch(e => console.log('提交请求已发送'));
-    
-    // Download CSV as local backup
-
 }
 
 function downloadLocalCSV(dims, total, payload) {
