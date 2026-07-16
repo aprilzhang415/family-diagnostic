@@ -351,20 +351,7 @@
         <div class="progress-steps" id="progressText"></div>
     </div>
 
-    <!-- Netlify Forms detector — MUST be visible in HTML source for Netlify to parse -->
-    <form name="diagnostic" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="position:absolute;left:-9999px;top:0;" aria-hidden="true">
-        <input type="hidden" name="form-name" value="diagnostic">
-        <input type="text" name="称呼">
-        <input type="text" name="微信">
-        <input type="text" name="子女信息">
-        <input type="text" name="子女特质数据">
-        <input type="text" name="亲子教育数据">
-        <input type="text" name="被动收入数据">
-        <input type="text" name="家庭系统数据">
-        <input type="text" name="父母适应力数据">
-        <input type="text" name="总分">
-        <input type="text" name="各维度得分">
-    </form>
+
 
     <!-- Main Card -->
     <div class="card" id="mainCard"></div>
@@ -727,7 +714,7 @@ function renderResult(card) {
         </div>`;
 
     if (state.submitted) {
-        card.querySelector('.btn-next').outerHTML = '<div class="success-msg">✅ 提交成功！我们会尽快与您联系。</div>';
+        card.querySelector('.btn-next').outerHTML = '<div class="success-msg">✅ 提交成功，诊断报告后续一对一发放</div>';
     }
 }
 
@@ -942,60 +929,60 @@ function updateDimBtn(key) {
 }
 
 // ============ SUBMIT ============
+// ⚠️ 部署时请将下面URL替换为你的Google Apps Script Web App URL
+const GAS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+
 async function submitForm() {
     if (state.submitted) return;
     
     const scores = calcScores();
-    const data = {
-        'form-name': 'diagnostic',
-        '称呼': state.contact.name,
-        '微信': state.contact.wechat,
-        '子女信息': JSON.stringify(state.children.map(c => ({age:c.age,type:c.traitsType}))),
-        '子女特质数据': JSON.stringify(state.children.map(c => c.traits)),
-        '亲子教育数据': JSON.stringify(state.parenting || []),
-        '被动收入数据': JSON.stringify(state.finance || []),
-        '家庭系统数据': JSON.stringify(state.family || []),
-        '父母适应力数据': JSON.stringify(state.adapt || []),
-        '总分': scores.total,
-        '各维度得分': JSON.stringify(scores.dimensions.map(d => ({label:d.label,score:d.score,pct:d.pct})))
+    const dims = scores.dimensions;
+    const payload = {
+        contact: { name: state.contact.name, wechat: state.contact.wechat },
+        children: state.children.map(c => ({age:c.age,type:c.traitsType,traits:c.traits})),
+        parenting: state.parenting || [],
+        finance: state.finance || [],
+        family: state.family || [],
+        adapt: state.adapt || [],
+        scores: {
+            total: scores.total,
+            dimensions: dims.map(d => ({label:d.label,score:d.score,pct:d.pct}))
+        }
     };
 
-    // Netlify Forms AJAX submission
+    // Submit to Google Sheets via Apps Script
     try {
-        const encoded = Object.keys(data).map(k =>
-            encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
-        ).join('&');
-        await fetch('/', {
+        await fetch(GAS_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: encoded
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
     } catch(e) {
-        console.log('Submit error:', e);
+        console.log('提交请求已发送');
     }
     
     state.submitted = true;
     render();
     
-    // Trigger CSV download
-    downloadCSV(data, scores);
+    // Download CSV as local backup
+    downloadLocalCSV(dims, scores.total, payload);
 }
 
-function downloadCSV(data, scores) {
+function downloadLocalCSV(dims, total, payload) {
     const rows = [
-        ['称呼', data['称呼']],
-        ['微信', data['微信']],
-        ['综合就绪度', scores.total + '/100'],
+        ['称呼', payload.contact.name],
+        ['微信', payload.contact.wechat],
+        ['综合就绪度', total + '/100'],
         [''],
         ['维度', '得分(满分35)', '百分比'],
-        ...scores.dimensions.map(d => [d.label, d.score, d.pct+'%']),
+        ...dims.map(d => [d.label, d.score, d.pct+'%']),
         [''],
-        ['子女信息', data['子女信息']],
-        ['子女特质数据', data['子女特质数据']],
-        ['亲子教育', data['亲子教育数据']],
-        ['被动收入', data['被动收入数据']],
-        ['家庭系统', data['家庭系统数据']],
-        ['父母适应力', data['父母适应力数据']],
+        ['子女信息', JSON.stringify(payload.children)],
+        ['亲子教育', JSON.stringify(payload.parenting)],
+        ['被动收入', JSON.stringify(payload.finance)],
+        ['家庭系统', JSON.stringify(payload.family)],
+        ['父母适应', JSON.stringify(payload.adapt)],
     ];
     
     const csvContent = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
