@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家庭出海诊断 · 管理后台</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f14; --card: #1a1a24; --border: #2a2a3a;
+  --text: #e0ddf0; --muted: #8888aa; --accent: #a78bfa;
+  --accent2: #c4b5fd; --red: #f87171; --green: #4ade80;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+}
+/* 密码门 */
+.gate {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:100vh; gap:20px;
+}
+.gate h1 { font-size:1.6rem; color:var(--accent); }
+.gate input {
+  background: var(--card); border:1px solid var(--border); color:var(--text);
+  padding:12px 20px; border-radius:8px; font-size:1rem; width:260px;
+  outline:none;
+}
+.gate input:focus { border-color:var(--accent); }
+.gate button {
+  background: var(--accent); color:#fff; border:none;
+  padding:12px 32px; border-radius:8px; font-size:1rem; cursor:pointer;
+}
+.gate .err { color:var(--red); font-size:.85rem; }
+/* 主界面 */
+.hidden { display:none !important; }
+.header {
+  background:var(--card); padding:16px 24px;
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10;
+}
+.header h1 { font-size:1.2rem; color:var(--accent); }
+.header .info { font-size:.85rem; color:var(--muted); }
+.container { max-width:1100px; margin:0 auto; padding:24px 16px; }
+/* 统计卡片 */
+.stats { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.stat-card {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:20px 24px; flex:1; min-width:140px; text-align:center;
+}
+.stat-card .num { font-size:2rem; font-weight:700; color:var(--accent2); }
+.stat-card .label { font-size:.8rem; color:var(--muted); margin-top:4px; }
+/* 提交卡片 */
+.submission {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:24px; margin-bottom:20px;
+}
+.sub-header {
+  display:flex; justify-content:space-between; align-items:center;
+  flex-wrap:wrap; gap:12px; margin-bottom:16px;
+}
+.sub-name { font-size:1.1rem; font-weight:600; }
+.sub-meta { font-size:.8rem; color:var(--muted); }
+.sub-score {
+  background:var(--accent); color:#fff; padding:6px 16px;
+  border-radius:20px; font-size:.9rem; font-weight:600; white-space:nowrap;
+}
+.sub-score.level-a { background:#4ade80; color:#0f0f14; }
+.sub-score.level-b { background:#facc15; color:#0f0f14; }
+.sub-score.level-c { background:#f59e0b; color:#fff; }
+.sub-score.level-d { background:#f87171; color:#fff; }
+.charts { display:flex; gap:20px; flex-wrap:wrap; }
+.chart-box { flex:1; min-width:280px; max-width:400px; }
+.chart-box canvas { max-height:260px; }
+.chart-box h4 { font-size:.85rem; color:var(--muted); margin-bottom:8px; text-align:center; }
+.dim-bars { flex:1; min-width:280px; }
+.bar-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.bar-label { width:72px; font-size:.78rem; color:var(--muted); text-align:right; flex-shrink:0; }
+.bar-track { flex:1; height:20px; background:#0f0f14; border-radius:10px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:10px; transition:width .5s; position:relative; }
+.bar-row .val { width:36px; font-size:.78rem; color:var(--text); flex-shrink:0; }
+/* 加载 */
+.loading { text-align:center; padding:60px; color:var(--muted); }
+/* 响应式 */
+@media(max-width:600px) {
+  .charts { flex-direction:column; }
+  .chart-box { max-width:100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- 密码门 -->
+<div id="gate" class="gate">
+  <h1>🔐 管理后台</h1>
+  <input type="password" id="pwdInput" placeholder="请输入管理密码" autofocus>
+  <button onclick="unlock()">进入</button>
+  <div class="err" id="gateErr"></div>
+</div>
+
+<!-- 主界面 -->
+<div id="main" class="hidden">
+  <div class="header">
+    <h1>📊 家庭出海诊断 · 管理后台</h1>
+    <span class="info" id="headerInfo"></span>
+  </div>
+  <div class="container" id="content">
+    <div class="loading">加载中...</div>
+  </div>
+</div>
+
+<script>
+// ============ 配置 ============
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzJ2KqK9ZgV1XhLmgIm_c2gf8scrUgnxeQa03u6WQzUzGWWNKMXk3yqOy4yYqNdopDA7g/exec';
+const ADMIN_KEY = 'ready2026admin';
+const DIM_LABELS = ['子女特质', '亲子教育', '被动收入', '家庭系统', '父母适应力'];
+const DIM_COLORS = ['#a78bfa', '#60a5fa', '#f472b6', '#34d399', '#fbbf24'];
+
+let allData = [];
+const destroyedCharts = [];
+
+// ============ 密码验证 ============
+async function unlock() {
+  const pw = document.getElementById('pwdInput').value.trim();
+  if (!pw) return;
+  
+  // 本地验证密钥
+  if (pw !== ADMIN_KEY) {
+    document.getElementById('gateErr').textContent = '密码错误';
+    return;
+  }
+  
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('main').classList.remove('hidden');
+  await loadData();
+}
+
+// Enter 键提交
+document.getElementById('pwdInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') unlock();
+});
+
+// ============ 数据加载 ============
+async function loadData() {
+  try {
+    const resp = await fetch(`${GAS_URL}?key=${ADMIN_KEY}`);
+    const json = await resp.json();
+    allData = json.rows || [];
+    render();
+  } catch(e) {
+    document.getElementById('content').innerHTML = '<div class="loading">加载失败，请检查网络后刷新页面</div>';
+  }
+}
+
+// ============ 渲染 ============
+function render() {
+  const total = allData.length;
+  const avgScore = total > 0
+    ? Math.round(allData.reduce((s, r) => s + (r['综合就绪度'] || 0), 0) / total)
+    : 0;
+  
+  document.getElementById('headerInfo').textContent = `共 ${total} 份答卷 | 均分 ${avgScore}`;
+  
+  if (total === 0) {
+    document.getElementById('content').innerHTML = '<div class="loading">暂无数据</div>';
+    return;
+  }
+  
+  // 统计摘要
+  let html = `<div class="stats">
+    <div class="stat-card"><div class="num">${total}</div><div class="label">总答卷数</div></div>
+    <div class="stat-card"><div class="num">${avgScore}</div><div class="label">平均就绪度</div></div>
+    <div class="stat-card"><div class="num">${countLevel('A')}</div><div class="label">高度就绪(≥80)</div></div>
+    <div class="stat-card"><div class="num">${countLevel('B')}</div><div class="label">中度就绪(60-79)</div></div>
+    <div class="stat-card"><div class="num">${countLevel('C')}</div><div class="label">预备阶段(40-59)</div></div>
+    <div class="stat-card"><div class="num">${countLevel('D')}</div><div class="label">需重点准备(&lt;40)</div></div>
+  </div>`;
+  
+  // 每份答卷
+  allData.forEach((row, idx) => {
+    const total = row['综合就绪度'] || 0;
+    const level = getLevel(total);
+    const dims = parseDims(row);
+    const id = `sub${idx}`;
+    
+    html += `<div class="submission">
+      <div class="sub-header">
+        <div>
+          <div class="sub-name">${esc(row['称呼'] || '匿名')}</div>
+          <div class="sub-meta">${formatDate(row['提交时间'])} · ${esc(row['微信'] || '未填')} · ${getChildrenSummary(row)}</div>
+        </div>
+        <div class="sub-score level-${level.class}">综合就绪度 ${total}</div>
+      </div>
+      <div class="charts">
+        <div class="chart-box"><h4>五维雷达图</h4><canvas id="radar_${id}"></canvas></div>
+        <div class="dim-bars">
+          ${DIM_LABELS.map((label, i) => {
+            const score = dims[i] || 0;
+            const pct = Math.round(score / 35 * 100);
+            return `<div class="bar-row">
+              <span class="bar-label">${label}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${DIM_COLORS[i]}"></div></div>
+              <span class="val">${score}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+  
+  document.getElementById('content').innerHTML = html;
+  
+  // 绘制雷达图（等DOM渲染完）
+  setTimeout(() => {
+    allData.forEach((row, idx) => {
+      const dims = parseDims(row);
+      drawRadar(`radar_sub${idx}`, dims);
+    });
+  }, 100);
+}
+
+// ============ 辅助函数 ============
+function parseDims(row) {
+  const details = row['各维度详情'];
+  if (Array.isArray(details)) return details.map(d => d.score || 0);
+  // 降级：从独立列读取
+  return [
+    row['子女特质(满分35)'] || 0,
+    row['亲子教育(满分35)'] || 0,
+    row['被动收入(满分35)'] || 0,
+    row['家庭系统(满分35)'] || 0,
+    row['父母适应(满分35)'] || 0
+  ];
+}
+
+function getLevel(score) {
+  if (score >= 80) return { class:'a', label:'A' };
+  if (score >= 60) return { class:'b', label:'B' };
+  if (score >= 40) return { class:'c', label:'C' };
+  return { class:'d', label:'D' };
+}
+
+function countLevel(level) {
+  return allData.filter(r => getLevel(r['综合就绪度'] || 0).label === level).length;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  try { return new Date(d).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch { return String(d).slice(0,16); }
+}
+
+function getChildrenSummary(row) {
+  try {
+    const children = typeof row['子女信息'] === 'string' ? JSON.parse(row['子女信息']) : (row['子女信息'] || []);
+    if (!children.length) return '';
+    return children.map(c => `${c.age}岁(${c.type === 'preschool' ? '幼儿' : '小学'})`).join('、');
+  } catch { return ''; }
+}
+
+function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function drawRadar(canvasId, dims) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  
+  new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: DIM_LABELS,
+      datasets: [{
+        label: '五维得分',
+        data: dims,
+        backgroundColor: 'rgba(167,139,250,0.15)',
+        borderColor: '#a78bfa',
+        borderWidth: 2,
+        pointBackgroundColor: DIM_COLORS,
+        pointRadius: 3,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 35,
+          ticks: { stepSize: 7, color: '#666680', backdropColor:'transparent', font:{size:9} },
+          grid: { color: '#2a2a3a' },
+          angleLines: { color: '#2a2a3a' },
+          pointLabels: { color: '#c4b5fd', font:{size:10} }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
