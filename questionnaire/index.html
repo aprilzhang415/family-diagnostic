@@ -950,20 +950,17 @@ async function submitForm() {
         }
     };
 
-    // Submit to Google Sheets via Apps Script
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch(e) {
-        console.log('提交请求已发送');
-    }
-    
+    // 先标记已提交、渲染成功页，再异步发送数据
     state.submitted = true;
     render();
+    
+    // Submit to Google Sheets via Apps Script（后台异步，不阻塞UI）
+    fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(e => console.log('提交请求已发送'));
     
     // Download CSV as local backup
 
