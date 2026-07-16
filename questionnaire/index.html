@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国家庭出海&国际教育诊断问卷</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-card: #1e1e36;
+            --bg-input: #252542;
+            --text: #e0d8f0;
+            --text-muted: #9a8fb8;
+            --primary: #7b5ea7;
+            --primary-light: #9b7ec5;
+            --accent: #c4a6e8;
+            --success: #6bc5a0;
+            --danger: #e88b8b;
+            --border: #2e2e4a;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 24px 16px 80px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0 24px;
+        }
+        .header .logo {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+        .header .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Progress */
+        .progress-wrap {
+            margin: 0 0 24px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .progress-steps .step-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .progress-steps .step-dot.active { background: var(--primary); }
+        .progress-steps .step-dot.done { background: var(--success); }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .card h2 {
+            font-size: 20px;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        .card .section-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* Form elements */
+        .field {
+            margin-bottom: 20px;
+        }
+        .field label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .field .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: -4px;
+            margin-bottom: 8px;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(123, 94, 167, 0.2);
+        }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239a8fb8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+        /* Scale / Likert */
+        .scale-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .scale-btn {
+            flex: 1;
+            min-width: 48px;
+            padding: 10px 6px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .scale-btn:hover { border-color: var(--primary-light); color: var(--text); }
+        .scale-btn.selected { border-color: var(--primary); background: rgba(123,94,167,0.2); color: var(--accent); font-weight: 700; }
+        .scale-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .question-item {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .question-item:hover { border-color: var(--border); }
+        .question-item.answered { border-color: rgba(123,94,167,0.3); }
+        .question-item .q-text {
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .question-item .q-num {
+            color: var(--primary-light);
+            font-weight: 700;
+            margin-right: 4px;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .btn-back {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .btn-back:hover { color: var(--text); border-color: var(--primary-light); }
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary), #6b4e9a);
+            color: #fff;
+            flex: 1;
+            max-width: 300px;
+        }
+        .btn-next:hover { background: linear-gradient(135deg, var(--primary-light), #7b5ea7); transform: translateY(-1px); }
+        .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-add-child {
+            background: transparent;
+            color: var(--accent);
+            border: 2px dashed var(--primary);
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .btn-add-child:hover { background: rgba(123,94,167,0.1); }
+
+        /* Welcome */
+        .welcome-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin: 16px 0;
+        }
+        .ready-box {
+            background: rgba(123,94,167,0.1);
+            border-left: 3px solid var(--primary);
+            padding: 14px 16px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        /* Result */
+        .result-summary {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .result-score {
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .result-radar {
+            max-width: 380px;
+            margin: 20px auto;
+        }
+        .dim-bars { margin-top: 20px; }
+        .dim-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        .dim-bar .dim-label {
+            width: 80px;
+            font-size: 13px;
+            text-align: right;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+        .dim-bar .dim-track {
+            flex: 1;
+            height: 20px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .dim-bar .dim-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+        .dim-bar .dim-val {
+            width: 36px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Children summary */
+        .child-summary {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .child-summary .remove-child {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 13px;
+            background: none;
+            border: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .scale-group { gap: 3px; }
+            .scale-btn { padding: 8px 4px; font-size: 11px; min-width: 40px; }
+            .card { padding: 20px 14px; }
+        }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .error-msg { color: var(--danger); font-size: 13px; margin-top: 4px; }
+        .success-msg { color: var(--success); text-align: center; font-size: 15px; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">🧭</div>
+        <h1>中国家庭出海&国际教育诊断问卷</h1>
+        <div class="subtitle">R.E.A.D.Y 家庭五维系统模型 · 预计10分钟</div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-steps" id="progressText"></div>
+    </div>
+
+    <!-- Netlify Forms detector — MUST be visible in HTML source for Netlify to parse -->
+    <form name="diagnostic" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="position:absolute;left:-9999px;top:0;" aria-hidden="true">
+        <input type="hidden" name="form-name" value="diagnostic">
+        <input type="text" name="称呼">
+        <input type="text" name="微信">
+        <input type="text" name="子女信息">
+        <input type="text" name="子女特质数据">
+        <input type="text" name="亲子教育数据">
+        <input type="text" name="被动收入数据">
+        <input type="text" name="家庭系统数据">
+        <input type="text" name="父母适应力数据">
+        <input type="text" name="总分">
+        <input type="text" name="各维度得分">
+    </form>
+
+    <!-- Main Card -->
+    <div class="card" id="mainCard"></div>
+</div>
+
+<script>
+// ============ DATA ============
+const STEPS = [
+    { id:'welcome', title:'欢迎', emoji:'🧭' },
+    { id:'contact', title:'填写信息', emoji:'📋' },
+    { id:'children', title:'子女信息', emoji:'👶' },
+    { id:'trait', title:'子女特质', emoji:'🎓' },
+    { id:'child-loop', title:'更多子女', emoji:'🔄' },
+    { id:'parenting', title:'亲子教育', emoji:'❤️' },
+    { id:'finance', title:'被动收入', emoji:'💰' },
+    { id:'family', title:'家庭系统', emoji:'🏠' },
+    { id:'adapt', title:'父母适应', emoji:'🌍' },
+    { id:'result', title:'诊断结果', emoji:'📊' },
+];
+
+const CHILD_TRAITS = {
+    'young': [
+        '我的孩子能较快适应新环境，不抗拒接触陌生人',
+        '孩子遇到小挫折时（如搭积木倒了、玩具被抢），能在安抚后较快恢复平静',
+        '我的孩子已具备基本生活自理能力（自己吃饭、穿脱衣物、如厕、收纳玩具）',
+        '孩子能与不同性格的同龄人友好相处，能用简单语言表达自己的需求和情绪',
+        '孩子对英语接触不排斥，对英文绘本、儿歌、动画片表现出兴趣和好奇心',
+        '孩子使用iPad/手机看动画片或玩游戏时，能在约定时间到后停止，不会哭闹抗拒',
+        '孩子有主动提问的习惯（"为什么""这是什么"），对周围事物保持探索欲'
+    ],
+    'older': [
+        '我的孩子能主动适应新学校和陌生社交环境，不依赖家长过度干预',
+        '孩子有较强的心理韧性，面对学业挫折或同伴冲突能自我调节，不轻易崩溃',
+        '孩子在学习上有较强的自驱力，能主动完成学业，不依赖外部监督',
+        '孩子每天有阅读英文原版书籍30分钟以上的习惯',
+        '孩子能保持中文阅读和书写习惯，不会因海外环境丢失母语能力',
+        '孩子能独立搜集信息并完成一个project（查资料、整理、呈现），且学习动力来自内在兴趣而非排名或他人比较',
+        '孩子能与不同文化背景的同龄人友好相处，有充分的表达力和自我主张能力'
+    ]
+};
+
+const DIMENSIONS = {
+    parenting: [
+        '我和孩子之间有开放信任的沟通氛围，我深入了解孩子的兴趣、压力与情绪状态',
+        '我能在尊重孩子意愿的基础上引导他/她做选择，孩子主动认同并期待此次海外计划',
+        '出国是为了主动追求多元成长而非逃避国内压力，即便孩子未来未进入"名校"，我们也认可这段经历本身的价值',
+        '我有能力陪伴孩子度过文化和学业适应期，且对海外教育体系（IB/AP/ALEVEL等课程与评估方式）有充分了解',
+        '我懂得鼓励孩子而非过度施压，并能适度放手让孩子学会独立',
+        '我能识别孩子的心理变化并及时寻求专业帮助',
+        '我们有共同的家庭价值观，孩子海外不会迷失方向'
+    ],
+    finance: [
+        '我们家庭的被动收入（投资收益、租金、分红等非劳动收入）已达到或超过海外生活开支的50%，构成了经济安全的基本盘',
+        '我们家有稳定的现金流足以支撑海外生活3年以上',
+        '我们已为海外教育准备了专项资金（含学费、保证金等），与日常开支分离管理',
+        '我们对学费之外的隐形成本（辅导、兴趣班、夏令营、实地考察等）有充分预算',
+        '即使主要劳动收入中断，家庭的被动收入和积蓄仍能维持海外开支至少12个月',
+        '我们已规划好海外医疗保险和充足的应急资金',
+        '海外开支不会显著影响国内家庭生活质量，且我们已对汇率波动、国内资产远程管理等风险做好充分准备'
+    ],
+    family: [
+        '父母双方在子女海外计划上完全达成共识，已明确出国方式并对此意见一致',
+        '夫妻/伴侣关系稳固，能承受可能的分居或共同适应带来的压力',
+        '我们已明确陪读家长的分工——日常生活支撑（开车、做饭、家务、学校沟通）与孩子成长陪伴（活动、学业适应）责任清晰，且陪读方有足够的时间和精力',
+        '我们已妥善安排好国内事务（房产管理、长辈照护、事业交接等），无后顾之忧',
+        '家庭长辈对此计划支持并能提供实际后援',
+        '我们能抵御外界眼光和社交压力的持续影响，不被他人评价动摇自己的决定',
+        '我们建立了清晰的家庭沟通机制（定期视频、家庭会议等），出现矛盾时有健康的解决方式'
+    ],
+    adapt: [
+        '陪读家长的英语（或目的地语言）能应对日常生活沟通，且能独立处理租房、就医、银行、学校等事务',
+        '对目的地的文化、礼仪和生活方式有充分了解，且能接受并尊重不同的价值观与生活方式',
+        '陪读家长能承受长时间的孤独感，性格上易于结识新朋友并建立社交关系',
+        '陪读家长有自己的事业、兴趣或学习目标，价值感不会被压缩，不会陷入"意义感反复拷问"的困境',
+        '陪读家长曾有海外生活、留学或长期出国经历，对异国适应有实际经验打底',
+        '已有海外人脉、华人社区或学校老师等支持网络',
+        '面对突发情况（疾病、政策变化等）有明确应对预案'
+    ]
+};
+
+// ============ STATE ============
+let state = {
+    step: 0,
+    contact: { name: '', wechat: '' },
+    children: [],            // [{age, traitsType:'young'|'older', traits:[]}]
+    currentChildIdx: -1,
+    parenting: [],
+    finance: [],
+    family: [],
+    adapt: [],
+    submitted: false
+};
+
+// ============ COMPUTED ============
+function getVisibleSteps() {
+    // Steps visible in progress bar (simplified)
+    const visible = [
+        { id:'welcome', title:'开始', emoji:'🧭' },
+        { id:'contact', title:'信息', emoji:'📋' },
+        { id:'children', title:'子女', emoji:'👶' },
+        { id:'trait', title:'特质', emoji:'🎓' },
+    ];
+    if (state.children.length > 0) {
+        visible.push({ id:'child-loop', title:'更多', emoji:'🔄' });
+    }
+    visible.push(
+        { id:'parenting', title:'亲子', emoji:'❤️' },
+        { id:'finance', title:'财务', emoji:'💰' },
+        { id:'family', title:'系统', emoji:'🏠' },
+        { id:'adapt', title:'适应', emoji:'🌍' },
+        { id:'result', title:'结果', emoji:'📊' }
+    );
+    return visible;
+}
+
+function getStepLabel(stepId) {
+    const map = {
+        welcome: '欢迎', contact: '填写信息', children: '子女信息', trait: '子女特质',
+        'child-loop': '更多子女', parenting: '亲子教育', finance: '被动收入', family: '家庭系统', adapt: '父母适应', result: '诊断结果'
+    };
+    return map[stepId] || stepId;
+}
+
+// ============ RENDER ============
+function render() {
+    const visibleSteps = getVisibleSteps();
+    const currentIdx = visibleSteps.findIndex(s => s.id === getCurrentStepId());
+    const totalVisible = visibleSteps.length;
+
+    // Update progress
+    const pct = totalVisible > 1 ? Math.round((currentIdx / (totalVisible - 1)) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').innerHTML = visibleSteps.map((s, i) => {
+        let cls = 'step-dot';
+        if (i < currentIdx) cls += ' done';
+        else if (i === currentIdx) cls += ' active';
+        return `<span><span class="${cls}"></span>${s.title}</span>`;
+    }).join('');
+
+    renderStep(getCurrentStepId());
+}
+
+function getCurrentStepId() {
+    if (state.step === 0) return 'welcome';
+    if (state.step === 1) return 'contact';
+    if (state.step === 2) return 'children';
+    if (state.step === 3) return 'trait';
+    if (state.step === 4) {
+        // After trait: if more children possible, ask
+        return 'child-loop';
+    }
+    if (state.step === 5) return 'parenting';
+    if (state.step === 6) return 'finance';
+    if (state.step === 7) return 'family';
+    if (state.step === 8) return 'adapt';
+    if (state.step === 9) return 'result';
+    return 'welcome';
+}
+
+function renderStep(stepId) {
+    const card = document.getElementById('mainCard');
+    card.classList.remove('fade-in');
+    void card.offsetWidth;
+    card.classList.add('fade-in');
+
+    switch (stepId) {
+        case 'welcome': renderWelcome(card); break;
+        case 'contact': renderContact(card); break;
+        case 'children': renderChildInput(card); break;
+        case 'trait': renderTrait(card); break;
+        case 'child-loop': renderChildLoop(card); break;
+        case 'parenting': renderDimension(card, 'parenting', '❤️', '维度二：亲子教育'); break;
+        case 'finance': renderDimension(card, 'finance', '💰', '维度三：被动收入系统'); break;
+        case 'family': renderDimension(card, 'family', '🏠', '维度四：家庭系统'); break;
+        case 'adapt': renderDimension(card, 'adapt', '🌍', '维度五：父母适应力'); break;
+        case 'result': renderResult(card); break;
+    }
+}
+
+function renderWelcome(card) {
+    card.innerHTML = `
+        <h2>🧭 中国家庭出海&国际教育诊断问卷</h2>
+        <div class="welcome-desc">
+            <p>基于<b>家庭五维系统模型</b>（R.E.A.D.Y），从亲子关系、子女特质、跨文化适应、被动收入、家庭系统五大维度，全面评估您家庭的海外发展就绪度。</p>
+        </div>
+        <div class="ready-box">
+            <strong>📌 填写说明</strong><br>
+            · 共35道评分题，预计10分钟<br>
+            · 按1-5分自评：1=完全不符合，5=完全符合<br>
+            · 如有多个子女，每位子女单独评估子女特质维度<br>
+            · 所有信息严格保密，结果仅供自我诊断参考
+        </div>
+        <div class="btn-row" style="justify-content:center;">
+            <button class="btn btn-next" onclick="nextStep()" style="min-width:200px;">开始诊断 →</button>
+        </div>`;
+}
+
+function renderContact(card) {
+    card.innerHTML = `
+        <h2>📋 填写人信息</h2>
+        <div class="section-sub">请留下您的称呼和联系方式，诊断结果将发送给您</div>
+        <div class="field">
+            <label>姓名称呼 *</label>
+            <input type="text" id="contactName" value="${escHtml(state.contact.name)}" placeholder="例如：张女士 / April">
+        </div>
+        <div class="field">
+            <label>微信 / 联系方式 *</label>
+            <input type="text" id="contactWechat" value="${escHtml(state.contact.wechat)}" placeholder="微信号或手机号">
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-back" onclick="prevStep()">← 上一步</button>
+            <button class="btn btn-next" onclick="saveContact()">下一步 →</button>
+        </div>`;
+}
+
+function renderChildInput(card) {
+    const idx = state.children.length + 1;
+    card.innerHTML = `
+        <h2>👶 子女信息</h2>
+        <div class="section-sub">${state.children.length > 0 ? `已添加 ${state.children.length} 位子女，继续添加下一位` : '请填写第一位子女的信息'}</div>
+        <div class="field">
+            <label>子女${idx}年龄 *</label>
+            <input type="number" id="childAge" placeholder="例如：5 或 8" min="2" max="18">
+            <div class="hint">输入周岁年龄，系统将自动匹配对应年龄段的题目</div>
+        </div>
+        ${state.children.length > 0 ? `
+        <div style="margin-bottom:16px;">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">已添加的子女：</div>
+            ${state.children.map((c,i) => `<div class="child-summary"><span>🧒 子女${i+1}：${c.age}岁（${c.traitsType==='young'?'幼儿版':'小学版'}）</span><button class="remove-child" onclick="removeChild(${i})">✕ 移除</button></div>`).join('')}
+        </div>` : ''}
+        <div class="btn-row">
+            ${state.children.length > 0 ? '<button class="btn btn-back" onclick="skipChildren()">跳过，继续 →</button>' : '<button class="btn btn-back" onclick="prevStep()">← 上一步</button>'}
+            <button class="btn btn-next" onclick="addChild()">添加子女 →</button>
+        </div>`;
+}
+
+function renderTrait(card) {
+    const child = state.children[state.currentChildIdx];
+    if (!child) return;
+    const questions = CHILD_TRAITS[child.traitsType];
+    const label = child.traitsType === 'young' ? '幼儿版（3-6岁）' : '小学版（6.5-12岁）';
+
+    card.innerHTML = `
+        <h2>🎓 维度一：子女特质</h2>
+        <div class="section-sub">${label} · 子女${state.currentChildIdx+1}（${child.age}岁）· 共7题</div>
+        <div class="scale-label">
+            <span>1 = 完全不符合</span><span>5 = 完全符合</span>
+        </div>
+        <div id="traitQuestions"></div>
+        <div class="btn-row">
+            <button class="btn btn-back" onclick="prevStep()">← 上一步</button>
+            <button class="btn btn-next" id="traitNextBtn" onclick="saveTraits()" disabled>此子女完成 →</button>
+        </div>`;
+
+    const container = document.getElementById('traitQuestions');
+    questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'question-item';
+        div.innerHTML = `
+            <div class="q-text"><span class="q-num">${i+1}.</span>${escHtml(q)}</div>
+            <div class="scale-group">
+                ${[1,2,3,4,5].map(v => `
+                    <button class="scale-btn" data-q="${i}" data-v="${v}" onclick="selectTrait(${i},${v})">${v}</button>
+                `).join('')}
+            </div>`;
+        container.appendChild(div);
+    });
+
+    // Restore previous selections
+    if (child.traits && child.traits.length > 0) {
+        child.traits.forEach((v, i) => {
+            const btn = document.querySelector(`.scale-btn[data-q="${i}"][data-v="${v}"]`);
+            if (btn) btn.classList.add('selected');
+        });
+        updateTraitBtn();
+    }
+}
+
+function renderChildLoop(card) {
+    card.innerHTML = `
+        <h2>🔄 是否还有更多子女？</h2>
+        <div class="section-sub">已为 ${state.children.length} 位子女完成了子女特质评估</div>
+        ${state.children.map((c,i) => `
+            <div class="child-summary">
+                <span>🧒 子女${i+1}：${c.age}岁 — ${c.traitsType==='young'?'幼儿版':'小学版'}（${c.traits ? c.traits.join(',') : '未完成'}）</span>
+            </div>`).join('')}
+        <div class="btn-row">
+            <button class="btn btn-add-child" onclick="addAnotherChild()">👶 + 添加另一位子女</button>
+            <button class="btn btn-next" onclick="goToParenting()">继续 → 亲子教育</button>
+        </div>`;
+}
+
+function renderDimension(card, key, emoji, title) {
+    const questions = DIMENSIONS[key];
+    const currentVals = state[key] || [];
+
+    card.innerHTML = `
+        <h2>${emoji} ${title}</h2>
+        <div class="section-sub">共7题 · 请按实际情况打分</div>
+        <div class="scale-label">
+            <span>1 = 完全不符合</span><span>5 = 完全符合</span>
+        </div>
+        <div id="dimQuestions"></div>
+        <div class="btn-row">
+            <button class="btn btn-back" onclick="prevStep()">← 上一步</button>
+            <button class="btn btn-next" id="dimNextBtn" onclick="saveDimension('${key}')" disabled>下一步 →</button>
+        </div>`;
+
+    const container = document.getElementById('dimQuestions');
+    questions.forEach((q, i) => {
+        const div = document.createElement('div');
+        div.className = 'question-item' + (currentVals[i] ? ' answered' : '');
+        div.innerHTML = `
+            <div class="q-text"><span class="q-num">${i+1}.</span>${escHtml(q)}</div>
+            <div class="scale-group">
+                ${[1,2,3,4,5].map(v => `
+                    <button class="scale-btn ${currentVals[i]===v?'selected':''}" data-q="${i}" data-v="${v}" onclick="selectDim('${key}',${i},${v})">${v}</button>
+                `).join('')}
+            </div>`;
+        container.appendChild(div);
+    });
+    updateDimBtn(key);
+}
+
+// ============ RENDER RESULT ============
+function renderResult(card) {
+    const scores = calcScores();
+    
+    // Radar chart
+    const radarSvg = buildRadar(scores.dimensions);
+
+    card.innerHTML = `
+        <div class="result-summary">
+            <h2>📊 诊断结果</h2>
+            <div class="section-sub">R.E.A.D.Y 家庭出海就绪度评分</div>
+            <div class="result-score">${scores.total}</div>
+            <div style="color:var(--text-muted);">综合就绪度评分 / 100</div>
+        </div>
+        <div class="result-radar">${radarSvg}</div>
+        <div class="dim-bars">
+            ${scores.dimensions.map((d,i) => {
+                const colors = ['#c4a6e8','#e8b4b4','#a6d4c4','#a6c4e8','#e8d4a6'];
+                return `
+                <div class="dim-bar">
+                    <div class="dim-label">${d.label}</div>
+                    <div class="dim-track">
+                        <div class="dim-fill" style="width:${d.pct}%;background:${colors[i]};"></div>
+                    </div>
+                    <div class="dim-val">${d.score}/35</div>
+                </div>`;
+            }).join('')}
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted);">
+            ${scores.total >= 80 ? '🌟 高度就绪：家庭出海基础扎实，可按计划推进' : 
+              scores.total >= 55 ? '👍 中等就绪：整体条件具备，建议针对弱项维度进一步准备' :
+              '📝 需要准备：建议在薄弱维度上投入更多时间和资源后再行动'}
+        </div>
+        <div class="btn-row" style="justify-content:center;">
+            <button class="btn btn-next" onclick="submitForm()" style="min-width:200px;">📤 提交结果</button>
+        </div>`;
+
+    if (state.submitted) {
+        card.querySelector('.btn-next').outerHTML = '<div class="success-msg">✅ 提交成功！我们会尽快与您联系。</div>';
+    }
+}
+
+function buildRadar(dimensions) {
+    const r = 100, cx = 200, cy = 170, levels = 5;
+    const labels = dimensions.map(d=>d.label);
+    const values = dimensions.map(d=>d.pct/100);
+    const n = labels.length;
+    
+    let svg = `<svg viewBox="0 0 400 360" style="width:100%;max-width:420px;">`;
+    
+    // Background grid
+    for (let l=1; l<=levels; l++) {
+        const ratio = l/levels;
+        let pts = [];
+        for (let i=0; i<n; i++) {
+            const angle = (Math.PI*2/n)*i - Math.PI/2;
+            pts.push(`${cx+r*ratio*Math.cos(angle)},${cy+r*ratio*Math.sin(angle)}`);
+        }
+        svg += `<polygon points="${pts.join(' ')}" fill="none" stroke="#3a3a5a" stroke-width="1"/>`;
+    }
+    
+    // Axes
+    for (let i=0; i<n; i++) {
+        const angle = (Math.PI*2/n)*i - Math.PI/2;
+        svg += `<line x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(angle)}" y2="${cy+r*Math.sin(angle)}" stroke="#3a3a5a" stroke-width="1"/>`;
+    }
+    
+    // Data polygon
+    let dataPts = [];
+    for (let i=0; i<n; i++) {
+        const angle = (Math.PI*2/n)*i - Math.PI/2;
+        dataPts.push(`${cx+r*values[i]*Math.cos(angle)},${cy+r*values[i]*Math.sin(angle)}`);
+    }
+    svg += `<polygon points="${dataPts.join(' ')}" fill="rgba(196,166,232,0.3)" stroke="#c4a6e8" stroke-width="2"/>`;
+    
+    // Data points
+    for (let i=0; i<n; i++) {
+        const angle = (Math.PI*2/n)*i - Math.PI/2;
+        svg += `<circle cx="${cx+r*values[i]*Math.cos(angle)}" cy="${cy+r*values[i]*Math.sin(angle)}" r="4" fill="#c4a6e8"/>`;
+    }
+    
+    // Labels — positioned farther from center, smart anchor to avoid clipping
+    const labelR = r + 36;
+    for (let i=0; i<n; i++) {
+        const angle = (Math.PI*2/n)*i - Math.PI/2;
+        const lx = cx + labelR*Math.cos(angle);
+        const ly = cy + labelR*Math.sin(angle);
+        let anchor, baseline;
+        // 0 = top, 1 = right, 2 = bottom-right, 3 = bottom-left, 4 = left
+        if (i === 0) { anchor = 'middle'; baseline = 'hanging'; }   // top
+        else if (i === 1) { anchor = 'start'; baseline = 'middle'; }   // right
+        else if (i === 2) { anchor = 'middle'; baseline = 'auto'; }   // bottom-right-ish, treat as bottom
+        else if (i === 3) { anchor = 'middle'; baseline = 'auto'; }   // bottom-left-ish
+        else { anchor = 'end'; baseline = 'middle'; }   // left
+        svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="${baseline}" fill="#9a8fb8" font-size="12">${labels[i]}</text>`;
+    }
+    
+    svg += '</svg>';
+    return svg;
+}
+
+// ============ CALC ============
+function calcScores() {
+    const dims = [
+        { label:'子女特质', key:'traits', raw: avgChildrenTraits() },
+        { label:'亲子教育', key:'parenting' },
+        { label:'被动收入', key:'finance' },
+        { label:'家庭系统', key:'family' },
+        { label:'父母适应', key:'adapt' }
+    ];
+    
+    const results = dims.map(d => {
+        let raw;
+        if (d.key === 'traits') {
+            raw = avgChildrenTraits();
+        } else {
+            const arr = state[d.key] || [];
+            raw = arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0;
+        }
+        const score = Math.round(raw * 7); // scale to out of 35
+        const pct = Math.round((raw / 5) * 100);
+        return { label:d.label, score, pct, raw:raw.toFixed(1) };
+    });
+    
+    const total = Math.round(results.reduce((a,b)=>a+b.pct, 0) / results.length);
+    return { total, dimensions: results };
+}
+
+function avgChildrenTraits() {
+    if (state.children.length === 0) return 0;
+    const all = state.children.flatMap(c => c.traits || []);
+    if (all.length === 0) return 0;
+    return all.reduce((a,b)=>a+b,0) / all.length;
+}
+
+// ============ NAVIGATION ============
+function nextStep() {
+    if (state.step < 9) { state.step++; render(); }
+}
+function prevStep() {
+    if (state.step > 0) { state.step--; render(); }
+}
+
+// ============ ACTIONS ============
+function saveContact() {
+    const name = document.getElementById('contactName').value.trim();
+    const wechat = document.getElementById('contactWechat').value.trim();
+    if (!name || !wechat) { alert('请填写称呼和联系方式'); return; }
+    state.contact = { name, wechat };
+    nextStep();
+}
+
+function addChild() {
+    const ageEl = document.getElementById('childAge');
+    const age = parseInt(ageEl?.value);
+    if (!age || age < 2 || age > 18) { alert('请输入有效的子女年龄（2-18岁）'); return; }
+    
+    const traitsType = age <= 6 ? 'young' : 'older';
+    state.children.push({ age, traitsType, traits: [] });
+    state.currentChildIdx = state.children.length - 1;
+    state.step = 3; // go to trait
+    render();
+}
+
+function selectTrait(qIdx, val) {
+    const child = state.children[state.currentChildIdx];
+    if (!child) return;
+    if (!child.traits) child.traits = [];
+    child.traits[qIdx] = val;
+    
+    // Update UI
+    const btns = document.querySelectorAll(`.scale-btn[data-q="${qIdx}"]`);
+    btns.forEach(b => b.classList.remove('selected'));
+    const target = document.querySelector(`.scale-btn[data-q="${qIdx}"][data-v="${val}"]`);
+    if (target) target.classList.add('selected');
+    
+    // Mark question answered
+    const qItem = target?.closest('.question-item');
+    if (qItem) qItem.classList.add('answered');
+    
+    updateTraitBtn();
+}
+
+function saveTraits() {
+    const child = state.children[state.currentChildIdx];
+    if (!child || !child.traits || child.traits.filter(v=>v).length < 7) {
+        alert('请完成所有7道题目'); return;
+    }
+    state.step = 4; // go to child-loop
+    render();
+}
+
+function addAnotherChild() {
+    state.step = 2; // back to child input
+    render();
+}
+
+function goToParenting() {
+    state.step = 5;
+    render();
+}
+
+function skipChildren() {
+    // User chose to skip adding more children
+    if (state.children.length > 0) {
+        state.step = 5; // parenting
+    } else {
+        state.step = 5; // no children? still proceed to parenting
+    }
+    render();
+}
+
+function removeChild(idx) {
+    state.children.splice(idx, 1);
+    render();
+}
+
+function selectDim(key, qIdx, val) {
+    if (!state[key]) state[key] = [];
+    state[key][qIdx] = val;
+    
+    const btns = document.querySelectorAll(`.scale-btn[data-q="${qIdx}"]`);
+    btns.forEach(b => b.classList.remove('selected'));
+    const target = document.querySelector(`.scale-btn[data-q="${qIdx}"][data-v="${val}"]`);
+    if (target) target.classList.add('selected');
+    
+    const qItem = target?.closest('.question-item');
+    if (qItem) qItem.classList.add('answered');
+    
+    updateDimBtn(key);
+}
+
+function saveDimension(key) {
+    const arr = state[key] || [];
+    if (arr.filter(v=>v).length < 7) { alert('请完成所有7道题目'); return; }
+    nextStep();
+}
+
+function updateTraitBtn() {
+    const child = state.children[state.currentChildIdx];
+    const complete = child && child.traits && child.traits.filter(v=>v).length === 7;
+    const btn = document.getElementById('traitNextBtn');
+    if (btn) btn.disabled = !complete;
+}
+
+function updateDimBtn(key) {
+    const arr = state[key] || [];
+    const complete = arr.filter(v=>v).length === 7;
+    const btn = document.getElementById('dimNextBtn');
+    if (btn) btn.disabled = !complete;
+}
+
+// ============ SUBMIT ============
+async function submitForm() {
+    if (state.submitted) return;
+    
+    const scores = calcScores();
+    const data = {
+        'form-name': 'diagnostic',
+        '称呼': state.contact.name,
+        '微信': state.contact.wechat,
+        '子女信息': JSON.stringify(state.children.map(c => ({age:c.age,type:c.traitsType}))),
+        '子女特质数据': JSON.stringify(state.children.map(c => c.traits)),
+        '亲子教育数据': JSON.stringify(state.parenting || []),
+        '被动收入数据': JSON.stringify(state.finance || []),
+        '家庭系统数据': JSON.stringify(state.family || []),
+        '父母适应力数据': JSON.stringify(state.adapt || []),
+        '总分': scores.total,
+        '各维度得分': JSON.stringify(scores.dimensions.map(d => ({label:d.label,score:d.score,pct:d.pct})))
+    };
+
+    // Netlify Forms AJAX submission
+    try {
+        const encoded = Object.keys(data).map(k =>
+            encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
+        ).join('&');
+        await fetch('/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: encoded
+        });
+    } catch(e) {
+        console.log('Submit error:', e);
+    }
+    
+    state.submitted = true;
+    render();
+    
+    // Trigger CSV download
+    downloadCSV(data, scores);
+}
+
+function downloadCSV(data, scores) {
+    const rows = [
+        ['称呼', data['称呼']],
+        ['微信', data['微信']],
+        ['综合就绪度', scores.total + '/100'],
+        [''],
+        ['维度', '得分(满分35)', '百分比'],
+        ...scores.dimensions.map(d => [d.label, d.score, d.pct+'%']),
+        [''],
+        ['子女信息', data['子女信息']],
+        ['子女特质数据', data['子女特质数据']],
+        ['亲子教育', data['亲子教育数据']],
+        ['被动收入', data['被动收入数据']],
+        ['家庭系统', data['家庭系统数据']],
+        ['父母适应力', data['父母适应力数据']],
+    ];
+    
+    const csvContent = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '家庭出海诊断结果_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ============ UTILS ============
+function escHtml(str) {
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============ INIT ============
+render();
+</script>
+</body>
+</html>
